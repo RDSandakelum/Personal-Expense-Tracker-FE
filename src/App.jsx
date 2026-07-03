@@ -132,13 +132,13 @@ function App() {
           <>
             {transactionStatus.isLoading && <p className="inline-message">Loading dashboard data...</p>}
             {transactionStatus.error && <p className="inline-message error-message">{transactionStatus.error}</p>}
-            <MetricCards summaryCards={summaryCards} />
+            {/* <MetricCards summaryCards={summaryCards} /> */}
             <section className="dashboard-grid">
-              <CashFlowPanel monthlyTrend={monthlyTrend} />
+              {/* <CashFlowPanel monthlyTrend={monthlyTrend} /> */}
               <SpendingMixPanel categoryBreakdown={categoryBreakdown} />
               <TransactionsPanel compact status={transactionStatus} transactions={transactions} />
-              <BudgetPanel budgets={budgets} totalSpent={totalSpent} totalBudget={totalBudget} />
-              <GoalsPanel goals={goals} accounts={accounts} onGoalUpdate={handleGoalUpdate} status={transactionStatus} />
+              {/* <BudgetPanel budgets={budgets} totalSpent={totalSpent} totalBudget={totalBudget} /> */}
+              {/* <GoalsPanel goals={goals} accounts={accounts} onGoalUpdate={handleGoalUpdate} status={transactionStatus} /> */}
               <AccountsPanel accounts={accounts} />
             </section>
           </>
@@ -154,9 +154,9 @@ function App() {
         {activePage === "budgets" && (
           <section className="dashboard-grid">
             <CategoriesPanel />
-            <BudgetPanel budgets={budgets} totalSpent={totalSpent} totalBudget={totalBudget} large />
+            {/* <BudgetPanel budgets={budgets} totalSpent={totalSpent} totalBudget={totalBudget} large />
             <GoalsPanel goals={goals} accounts={accounts} onGoalUpdate={handleGoalUpdate} status={transactionStatus} />
-            <SpendingMixPanel categoryBreakdown={categoryBreakdown} />
+            <SpendingMixPanel categoryBreakdown={categoryBreakdown} /> */}
           </section>
         )}
 
