@@ -46,7 +46,7 @@ const emptyDashboardData = {
 
 function App() {
   const [session, setSession] = useState(() => getStoredSession());
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [activePage, setActivePage] = useState("overview");
   const [dashboardData, setDashboardData] = useState(emptyDashboardData);
   const [transactionStatus, setTransactionStatus] = useState({
@@ -134,12 +134,13 @@ function App() {
             {transactionStatus.error && <p className="inline-message error-message">{transactionStatus.error}</p>}
             {/* <MetricCards summaryCards={summaryCards} /> */}
             <section className="dashboard-grid">
+              <AccountsPanel accounts={accounts} />
               {/* <CashFlowPanel monthlyTrend={monthlyTrend} /> */}
               <SpendingMixPanel categoryBreakdown={categoryBreakdown} />
               <TransactionsPanel compact status={transactionStatus} transactions={transactions} />
               {/* <BudgetPanel budgets={budgets} totalSpent={totalSpent} totalBudget={totalBudget} /> */}
               {/* <GoalsPanel goals={goals} accounts={accounts} onGoalUpdate={handleGoalUpdate} status={transactionStatus} /> */}
-              <AccountsPanel accounts={accounts} />
+              {/* <AccountsPanel accounts={accounts} /> */}
             </section>
           </>
         )}
