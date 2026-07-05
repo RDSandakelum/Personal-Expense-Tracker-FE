@@ -89,8 +89,8 @@ export function TransactionsPanel({ compact = false, status, transactions: initi
               </span>
             </div>
             <span className="status">{transaction.type ?? (transaction.amount > 0 ? "CREDIT" : "DEBIT")}</span>
-            <strong className={transaction.type === "CREDIT" || transaction.amount > 0 ? "amount positive" : "amount negative"}>
-              {transaction.type === "CREDIT" || transaction.amount > 0 ? "+" : "-"}
+            <strong className={transaction.type === "CREDIT" ?"amount positive" : "amount negative"}>
+              {transaction.type === "CREDIT" ? "+" : "-"}
               {formatCurrency(Math.abs(transaction.amount))}
             </strong>
           </div>

@@ -19,3 +19,18 @@ export async function fetchTransactionsByMonth(year, month) {
     return [];
   }
 }
+
+const toApiTransfer = (transfer) => ({
+  goalId: transfer.goal,
+  amount: transfer.amount,
+  note: transfer.note,
+  type: transfer.type,
+  date: transfer.date,
+});
+
+export async function createTransfer(transfer) {
+  console.log("this is called 2")
+  const data = (await post("/accounts/transfer", toApiTransfer(transfer))) ?? {};
+  return true
+}
+

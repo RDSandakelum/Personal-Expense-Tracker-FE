@@ -78,8 +78,6 @@ export function NewTransactionPanel({ isSaving, onAddTransaction }) {
     date: `${form.date}T00:00:00Z`, // Formats cleanly into Go's time.Time
   };
 
-  console.log("Passing this clean payload to handler:", payload);
-
   // 3. CRITICAL: Pass the 'payload' variable directly into onAddTransaction!
   const wasSaved = await onAddTransaction(payload);
 
@@ -114,8 +112,8 @@ export function NewTransactionPanel({ isSaving, onAddTransaction }) {
           <label>
             <span>Type</span>
             <select disabled={isSaving} value={form.type} onChange={(event) => updateForm("type", event.target.value)}>
-              <option value="Debit">DEBIT</option>
-              <option value="Credit">CREDIT</option>
+              <option value="Debit">Debit</option>
+              <option value="Credit">Credit</option>
             </select>
           </label>
 

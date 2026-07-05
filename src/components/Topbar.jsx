@@ -10,13 +10,6 @@ export function Topbar({ currentPage, darkMode, onLogout, setDarkMode }) {
       </div>
 
       <div className="topbar-actions">
-        <label className="search" aria-label="Search transactions">
-          <Search size={17} />
-          <input placeholder="Search" />
-        </label>
-        <button className="icon-button" aria-label="Notifications" type="button">
-          <Bell size={18} />
-        </button>
         <button className="icon-button" aria-label="Log out" onClick={onLogout} type="button">
           <LogOut size={18} />
         </button>

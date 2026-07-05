@@ -1,61 +1,69 @@
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { Play } from "lucide-react";
 import { formatCurrency } from "../utils/format";
-import { addFundsToGoal } from "../goalsApi";
 
-export function GoalsPanel({ goals, accounts, onGoalUpdate, status }) {
-  const [addingFundsTo, setAddingFundsTo] = useState(null);
-  const [fundForm, setFundForm] = useState({
-    goalId: null,
-    accountId: "",
-    amount: "",
-  });
-  const [fundStatus, setFundStatus] = useState({ loading: false, error: "" });
+export function GoalsPanel({ goals, status }) {
+  // Track user typing input per goal
+  const [monthlyInputs, setMonthlyInputs] = useState({});
+  // Track the actual evaluated completion date strings per goal
+  const [calculatedDates, setCalculatedDates] = useState({});
 
-  const handleAddFundsClick = (goalId) => {
-    setAddingFundsTo(goalId);
-    setFundForm({
-      goalId,
-      accountId: accounts?.[0]?.id ?? "",
-      amount: "",
-    });
-    setFundStatus({ loading: false, error: "" });
+  const handleInputChange = (goalId, value) => {
+    setMonthlyInputs((prev) => ({
+      ...prev,
+      [goalId]: value,
+    }));
   };
 
-  const handleCloseFundForm = () => {
-    setAddingFundsTo(null);
-    setFundForm({ goalId: null, accountId: "", amount: "" });
-  };
+  const handleCalculate = (e, goalId, saved, target) => {
+    // Prevent form submission reloads if wrapped inside a form template layout
+    e.preventDefault();
+    
+    const userInput = monthlyInputs[goalId];
+    const monthlyContribution = parseFloat(userInput);
 
-  const handleAddFunds = async (event) => {
-    event.preventDefault();
-    const amount = Number(fundForm.amount);
-
-    if (!amount || amount <= 0 || !fundForm.accountId) {
-      setFundStatus({ loading: false, error: "Please enter a valid amount and select an account" });
+    if (!monthlyContribution || monthlyContribution <= 0) {
+      setCalculatedDates((prev) => ({ ...prev, [goalId]: "—" }));
       return;
     }
 
-    setFundStatus({ loading: true, error: "" });
-
-    try {
-      await addFundsToGoal(fundForm.goalId, amount, fundForm.accountId);
-      handleCloseFundForm();
-      if (onGoalUpdate) {
-        onGoalUpdate();
-      }
-      setFundStatus({ loading: false, error: "" });
-    } catch (error) {
-      setFundStatus({ loading: false, error: error.message });
+    const remaining = target - saved;
+    if (remaining <= 0) {
+      setCalculatedDates((prev) => ({ ...prev, [goalId]: "Completed" }));
+      return;
     }
+
+    const monthsRequired = Math.ceil(remaining / monthlyContribution);
+    const completionDate = new Date();
+    
+    // Projections start counting forward from next month onwards
+    completionDate.setMonth(completionDate.getMonth() + monthsRequired);
+
+    const year = completionDate.getFullYear();
+    const monthName = completionDate.toLocaleString("default", { month: "long" });
+    
+    setCalculatedDates((prev) => ({
+      ...prev,
+      [goalId]: `${year} ${monthName}`,
+    }));
   };
 
   return (
     <article className="panel goals-panel">
-      <div className="panel-heading compact">
+      {/* Kept your structural heading alignment block intact */}
+      <div className="panel-heading compact" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "1rem" }}>
         <div>
           <p className="eyebrow">Goals</p>
           <h2>Savings progress</h2>
+        </div>
+
+        <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", paddingBottom: "4px" }}>
+          <span style={{ fontSize: "0.8rem", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.7, width: "185px", textAlign: "left" }}>
+            Monthly Plan
+          </span>
+          <span style={{ fontSize: "0.8rem", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.7, width: "130px", textAlign: "left" }}>
+            Est. Completion
+          </span>
         </div>
       </div>
 
@@ -68,87 +76,73 @@ export function GoalsPanel({ goals, accounts, onGoalUpdate, status }) {
 
       <div className="goals-list">
         {goals.map((goal) => {
-          const progress = Math.round(((goal.saved ?? goal.current ?? 0) / (goal.target ?? 1)) * 100);
-          const isBeingEdited = addingFundsTo === goal.id;
+          const currentSaved = goal.saved ?? goal.current ?? 0;
+          const targetAmount = goal.target_amount ?? 1;
+          const progress = Math.round((currentSaved / targetAmount) * 100);
+          
+          const currentInput = monthlyInputs[goal.id] || "";
+          const computedResult = calculatedDates[goal.id] || "—";
 
           return (
-            <div className="goal-item" key={goal.id ?? goal.name}>
-              {isBeingEdited ? (
-                <div className="goal-form">
-                  <label>
-                    <span>Account</span>
-                    <select
-                      value={fundForm.accountId}
-                      onChange={(e) => setFundForm({ ...fundForm, accountId: e.target.value })}
-                      disabled={fundStatus.loading}
-                    >
-                      <option value="">Select account</option>
-                      {(accounts ?? []).map((account) => (
-                        <option key={account.id} value={account.id}>
-                          {account.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label>
-                    <span>Amount</span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={fundForm.amount}
-                      onChange={(e) => setFundForm({ ...fundForm, amount: e.target.value })}
-                      disabled={fundStatus.loading}
-                    />
-                  </label>
-
-                  {fundStatus.error && <p className="error-message small">{fundStatus.error}</p>}
-
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      className="submit-button small"
-                      onClick={handleAddFunds}
-                      disabled={fundStatus.loading}
-                    >
-                      {fundStatus.loading ? "Adding..." : "Add"}
-                    </button>
-                    <button
-                      type="button"
-                      className="ghost-button small"
-                      onClick={handleCloseFundForm}
-                      disabled={fundStatus.loading}
-                    >
-                      Cancel
-                    </button>
+            <div className="goal-item" key={goal.id ?? goal.name} style={{ marginBottom: "1.5rem" }}>
+              
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1.5rem", flexWrap: "wrap" }}>
+                
+                {/* Left side: Goal Text information */}
+                <div className="goal-header" style={{ flex: "1", minWidth: "200px" }}>
+                  <div>
+                    <strong>{goal.name}</strong>
+                    <span style={{ marginLeft: "8px" }}>{progress}% funded</span>
                   </div>
                 </div>
-              ) : (
-                <>
-                  <div className="goal-header">
-                    <div>
-                      <strong>{goal.name}</strong>
-                      <span>{progress}% funded</span>
+
+                {/* Right side alignment column matching your exact CSS framework rules */}
+                <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+                  
+                  {/* We use your native transaction-form styles here so elements mirror other panels */}
+                  <form 
+                    className="transaction-form" 
+                    onSubmit={(e) => handleCalculate(e, goal.id, currentSaved, targetAmount)}
+                    style={{ display: "flex", alignItems: "center", gap: "8px", margin: 0, padding: 0 }}
+                  >
+                    <div style={{ width: "120px" }}>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="0.00"
+                        value={currentInput}
+                        onChange={(e) => handleInputChange(goal.id, e.target.value)}
+                      />
                     </div>
-                    <button
-                      type="button"
-                      className="add-funds-btn"
-                      onClick={() => handleAddFundsClick(goal.id)}
-                      title="Add funds to this goal"
+                    
+                    {/* Reused your native submit button class wrapper */}
+                    <button 
+                      className="submit-button" 
+                      disabled={!currentInput} 
+                      type="submit"
+                      title="Calculate Target Date"
                     >
-                      <Plus size={16} />
+                      <Play size={14} fill={currentInput ? "currentColor" : "none"} />
                     </button>
+                  </form>
+
+                  {/* Calculated Completion Month Indicator */}
+                  <div style={{ width: "130px", fontWeight: computedResult !== "—" ? "600" : "400", fontSize: "0.95rem" }}>
+                    {computedResult}
                   </div>
-                  <div className="progress-track" aria-label={`${goal.name} ${progress}% funded`}>
-                    <span style={{ width: `${progress}%` }} />
-                  </div>
-                  <small>
-                    {formatCurrency(goal.saved ?? goal.current ?? 0)} of {formatCurrency(goal.target ?? 0)}
-                  </small>
-                </>
-              )}
+                </div>
+
+              </div>
+
+              {/* Native UI Progress bar */}
+              <div className="progress-track" aria-label={`${goal.name} ${progress}% funded`} style={{ marginTop: "8px" }}>
+                <span style={{ width: `${progress}%` }} />
+              </div>
+
+              <small style={{ display: "block", marginTop: "4px" }}>
+                {formatCurrency(currentSaved)} of {formatCurrency(targetAmount)}
+              </small>
             </div>
           );
         })}

@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Home, CreditCard, PieChart as PieChartIcon, LineChart, Settings } from "lucide-react";
+import { Home, CreditCard, PieChart as PieChartIcon, LineChart, Settings, Landmark, TargetIcon } from "lucide-react";
 
 import { clearStoredSession, getStoredSession, loginUser } from "./authApi";
 import { fetchDashboardData } from "./dashboardApi";
 import { createTransaction } from "./transactionsApi";
+import { createTransfer } from "./accountsApi";
 
 // Core UI Components
 import { LoginPage } from "./components/LoginPage";
@@ -20,11 +21,14 @@ import { MonthlyProgressPanel } from "./components/MonthlyProgressPanel";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { CategoriesPanel } from "./components/CategoriesPanel";
 import { AccountsPanel } from "./components/AccountsPanel";
+import { AccountTransferPanel } from "./components/AccountTransfer";
 
 const navItems = [
   { id: "overview", label: "Overview", title: "Personal expense dashboard", eyebrow: "June snapshot", icon: Home },
   { id: "transactions", label: "Transactions", title: "Transactions", eyebrow: "Recent activity", icon: CreditCard },
+  { id: "accounts", label: "Accounts", title: "Accounts", eyebrow: "Manage your accounts", icon: Landmark },
   { id: "budgets", label: "Budgets", title: "Budgets and goals", eyebrow: "Monthly planning", icon: PieChartIcon },
+  {id: "goals", label: "Goals", title: "Current Goals", eyebrow:"Current Goals", icon: TargetIcon},
   { id: "reports", label: "Reports", title: "Reports", eyebrow: "Spending analysis", icon: LineChart },
   { id: "settings", label: "Settings", title: "Settings", eyebrow: "Preferences", icon: Settings },
 ];
@@ -113,6 +117,15 @@ function App() {
     }
   };
 
+  const handleAccountTransfer = async (transfer) => {
+    try {
+      const savedTransfer = await createTransfer(transfer);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
   const handleGoalUpdate = () => {
     loadDashboardData();
   };
@@ -132,15 +145,13 @@ function App() {
           <>
             {transactionStatus.isLoading && <p className="inline-message">Loading dashboard data...</p>}
             {transactionStatus.error && <p className="inline-message error-message">{transactionStatus.error}</p>}
-            {/* <MetricCards summaryCards={summaryCards} /> */}
+            <MetricCards summaryCards={summaryCards} />
             <section className="dashboard-grid">
               <AccountsPanel accounts={accounts} />
               {/* <CashFlowPanel monthlyTrend={monthlyTrend} /> */}
               <SpendingMixPanel categoryBreakdown={categoryBreakdown} />
               <TransactionsPanel compact status={transactionStatus} transactions={transactions} />
               {/* <BudgetPanel budgets={budgets} totalSpent={totalSpent} totalBudget={totalBudget} /> */}
-              {/* <GoalsPanel goals={goals} accounts={accounts} onGoalUpdate={handleGoalUpdate} status={transactionStatus} /> */}
-              {/* <AccountsPanel accounts={accounts} /> */}
             </section>
           </>
         )}
@@ -151,13 +162,23 @@ function App() {
             <TransactionsPanel status={transactionStatus} transactions={transactions} />
           </section>
         )}
-
+        {activePage === "accounts" && (
+          <section className="single-grid">
+            <AccountsPanel accounts={accounts} />
+            <AccountTransferPanel goals={goals} onTransfer={handleAccountTransfer} />
+          </section>
+        )}
         {activePage === "budgets" && (
           <section className="dashboard-grid">
             <CategoriesPanel />
             {/* <BudgetPanel budgets={budgets} totalSpent={totalSpent} totalBudget={totalBudget} large />
-            <GoalsPanel goals={goals} accounts={accounts} onGoalUpdate={handleGoalUpdate} status={transactionStatus} />
             <SpendingMixPanel categoryBreakdown={categoryBreakdown} /> */}
+          </section>
+        )}
+
+        {activePage==="goals" && (
+          <section className="single-grid">
+            <GoalsPanel goals={goals} status={transactionStatus} />
           </section>
         )}
 

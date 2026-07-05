@@ -23,28 +23,29 @@ function transformSummaryCards(data) {
   const summary = data;
   return [
     {
-      label: "Total Income",
-      value: `$${(summary.total_income || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
-      delta: "+4.5%",
+      label: "Month Income",
+      value: `$${(summary.month_income || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
       tone: "positive",
     },
     {
-      label: "Total Expenses",
-      value: `$${(summary.total_expenses || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
-      delta: "-2.3%",
+      label: "Month Expenses",
+      value: `$${(summary.month_expenses || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
       tone: "negative",
     },
     {
-      label: "Net Balance",
-      value: `$${(summary.net_balance || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
-      delta: "+12.5%",
+      label: "Remaining Expenses",
+      value: `$${(summary.remaining_expenses || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
+      tone: "negative",
+    },
+    {
+      label: "Month Savings",
+      value: `$${(summary.month_savings || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
       tone: "positive",
     },
     {
-      label: "Available Funds",
-      value: `$${(summary.available_funds || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
-      delta: "+0.0%",
-      tone: "neutral",
+      label: "Carried Over",
+      value: `$${(summary.carried_over || 0).toLocaleString("en-US", { maximumFractionDigits: 2 })}`,
+      tone: "positive",
     },
   ];
 }
