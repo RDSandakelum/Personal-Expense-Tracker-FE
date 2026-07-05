@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Play } from "lucide-react";
 import { formatCurrency } from "../utils/format";
 
-export function GoalsPanel({ goals, status }) {
+export function GoalsPanel({ goals= [], status }) {
   // Track user typing input per goal
   const [monthlyInputs, setMonthlyInputs] = useState({});
   // Track the actual evaluated completion date strings per goal
@@ -75,78 +75,82 @@ export function GoalsPanel({ goals, status }) {
       )}
 
       <div className="goals-list">
-        {goals.map((goal) => {
-          const currentSaved = goal.saved ?? goal.current ?? 0;
-          const targetAmount = goal.target_amount ?? 1;
-          const progress = Math.round((currentSaved / targetAmount) * 100);
+  {goals.map((goal) => {
+    const currentSaved = goal.saved ?? goal.current ?? 0;
+    const targetAmount = goal.target_amount ?? 1;
+    const progress = Math.min(Math.round((currentSaved / targetAmount) * 100), 100);
+    
+    const currentInput = monthlyInputs[goal.id] || "";
+    const computedResult = calculatedDates[goal.id] || "—";
+
+    return (
+      <div className="goal-item" key={goal.id ?? goal.name} style={{ marginBottom: "1.5rem" }}>
+        
+        {/* CHANGED: Swapped gap to 0.75rem and allowed a cleaner wrap break */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
           
-          const currentInput = monthlyInputs[goal.id] || "";
-          const computedResult = calculatedDates[goal.id] || "—";
-
-          return (
-            <div className="goal-item" key={goal.id ?? goal.name} style={{ marginBottom: "1.5rem" }}>
-              
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1.5rem", flexWrap: "wrap" }}>
-                
-                {/* Left side: Goal Text information */}
-                <div className="goal-header" style={{ flex: "1", minWidth: "200px" }}>
-                  <div>
-                    <strong>{goal.name}</strong>
-                    <span style={{ marginLeft: "8px" }}>{progress}% funded</span>
-                  </div>
-                </div>
-
-                {/* Right side alignment column matching your exact CSS framework rules */}
-                <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
-                  
-                  {/* We use your native transaction-form styles here so elements mirror other panels */}
-                  <form 
-                    className="transaction-form" 
-                    onSubmit={(e) => handleCalculate(e, goal.id, currentSaved, targetAmount)}
-                    style={{ display: "flex", alignItems: "center", gap: "8px", margin: 0, padding: 0 }}
-                  >
-                    <div style={{ width: "120px" }}>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        placeholder="0.00"
-                        value={currentInput}
-                        onChange={(e) => handleInputChange(goal.id, e.target.value)}
-                      />
-                    </div>
-                    
-                    {/* Reused your native submit button class wrapper */}
-                    <button 
-                      className="submit-button" 
-                      disabled={!currentInput} 
-                      type="submit"
-                      title="Calculate Target Date"
-                    >
-                      <Play size={14} fill={currentInput ? "currentColor" : "none"} />
-                    </button>
-                  </form>
-
-                  {/* Calculated Completion Month Indicator */}
-                  <div style={{ width: "130px", fontWeight: computedResult !== "—" ? "600" : "400", fontSize: "0.95rem" }}>
-                    {computedResult}
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Native UI Progress bar */}
-              <div className="progress-track" aria-label={`${goal.name} ${progress}% funded`} style={{ marginTop: "8px" }}>
-                <span style={{ width: `${progress}%` }} />
-              </div>
-
-              <small style={{ display: "block", marginTop: "4px" }}>
-                {formatCurrency(currentSaved)} of {formatCurrency(targetAmount)}
-              </small>
+          {/* Left side: Goal Text information */}
+          {/* CHANGED: Removed minWidth restriction so it scales down natively */}
+          <div className="goal-header" style={{ flex: "1 1 auto" }}>
+            <div>
+              <strong>{goal.name}</strong>
+              <span style={{ marginLeft: "8px", display: "inline-block" }}>{progress}% funded</span>
             </div>
-          );
-        })}
+          </div>
+
+          {/* Right side alignment column */}
+          {/* CHANGED: Added flexWrap: "wrap" so the date drops nicely below the input on narrow screens */}
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap", minWidth: "200px" }}>
+            
+            <form 
+              className="transaction-form" 
+              onSubmit={(e) => handleCalculate(e, goal.id, currentSaved, targetAmount)}
+              style={{ display: "flex", alignItems: "center", gap: "8px", margin: 0, padding: 0 }}
+            >
+              {/* CHANGED: Reduced from 120px to 90px to prevent spilling out on mobile */}
+              <div style={{ width: "90px" }}>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="0.00"
+                  value={currentInput}
+                  onChange={(e) => handleInputChange(goal.id, e.target.value)}
+                  style={{ width: "100%" }}
+                />
+              </div>
+              
+              <button 
+                className="submit-button" 
+                disabled={!currentInput} 
+                type="submit"
+                title="Calculate Target Date"
+              >
+                <Play size={14} fill={currentInput ? "currentColor" : "none"} />
+              </button>
+            </form>
+
+            {/* Calculated Completion Month Indicator */}
+            {/* CHANGED: Set to auto width with a small min-width so text doesn't overflow container borders */}
+            <div style={{ minWidth: "100px", width: "auto", fontWeight: computedResult !== "—" ? "600" : "400", fontSize: "0.95rem" }}>
+              {computedResult}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Native UI Progress bar */}
+        <div className="progress-track" aria-label={`${goal.name} ${progress}% funded`} style={{ marginTop: "8px" }}>
+          <span style={{ width: `${progress}%` }} />
+        </div>
+
+        <small style={{ display: "block", marginTop: "4px" }}>
+          {formatCurrency(currentSaved)} of {formatCurrency(targetAmount)}
+        </small>
       </div>
+    );
+  })}
+</div>
     </article>
   );
 }
