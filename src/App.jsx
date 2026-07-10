@@ -22,6 +22,7 @@ import { SettingsPanel } from "./components/SettingsPanel";
 import { CategoriesPanel } from "./components/CategoriesPanel";
 import { AccountsPanel } from "./components/AccountsPanel";
 import { AccountTransferPanel } from "./components/AccountTransfer";
+import { AccountTransactionPanel } from "./components/AccountTransactionPanel";
 
 const navItems = [
   { id: "overview", label: "Overview", title: "Personal expense dashboard", eyebrow: "June snapshot", icon: Home },
@@ -166,6 +167,7 @@ function App() {
           <section className="single-grid">
             <AccountsPanel accounts={accounts} />
             <AccountTransferPanel goals={goals} onTransfer={handleAccountTransfer} />
+            <AccountTransactionPanel />
           </section>
         )}
         {activePage === "budgets" && (

@@ -20,6 +20,16 @@ export async function fetchTransactionsByMonth(year, month) {
   }
 }
 
+export async function fetchAccountTransfers(year, month) {
+  try {
+    const data = await get(`/account/transfers`);
+    return data ?? [];
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    return [];
+  }
+}
+
 const toApiTransfer = (transfer) => ({
   goalId: transfer.goal,
   amount: transfer.amount,
